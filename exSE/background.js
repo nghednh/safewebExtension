@@ -19,7 +19,7 @@ function blockSites(sites) {
 // Fetch blocked websites from server and block them
 async function fetchAndBlockSites() {
   try {
-    const response = await fetch('http://localhost:5000/blocked-websites/12345');
+    const response = await fetch('http://localhost:5000/block-website/nguyenvanb');
     if (response.ok) {
       const blockedWebsites = await response.json();
       blockSites(blockedWebsites);
@@ -30,6 +30,4 @@ async function fetchAndBlockSites() {
     console.error('Error fetching blocked websites:', error);
   }
 }
-
-// Fetch and block sites for user "12345" every 10 seconds
 setInterval(fetchAndBlockSites, 10000);

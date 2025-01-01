@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
       },
     ],
     time_limit: { type: mongoose.Schema.Types.Decimal128 },
-    block_browsers: { type: [String] },
+    block_website: { type: [String] },
     black_list_filter: { type: [String] },
   },
   password: { type: String, required: true },
@@ -140,6 +140,20 @@ app.put('/personal-information/:username', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// Endpoint to get block_browsers for a specific user
+app.get('/block_website/:username', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    if (user) {
+      res.json(user.rules.block_website); // Return block_browsers array
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // **UPDATE RULES**
 app.put('/rules/:username', async (req, res) => {
