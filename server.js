@@ -18,20 +18,12 @@ const userSchema = new mongoose.Schema({
   organ_id: { type: String },
   personal_information: {
     name: { type: String },
-    birthday: {
-      t: { type: Number },
-      i: { type: Number },
-    },
+    birthday: { type: String },
     account: { type: String },
   },
   role: { type: String },
   rules: {
-    time_active: [
-      {
-        t: { type: Number },
-        i: { type: Number },
-      },
-    ],
+    time_active: [{ type: Number }],
     time_limit: { type: mongoose.Schema.Types.Decimal128 },
     block_website: { type: [String] },
     black_list_filter: { type: [String] },
@@ -54,6 +46,25 @@ app.get('/password/:username', async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/validate-user', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
+    }
+
+    const user = await User.findOne({ username: username });
+    if (user && user.password === password) {
+      return res.json({ success: true, message: 'Credentials are valid' });
+    } else {
+      return res.json({ success: false, message: 'Invalid username or password' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -224,6 +235,31 @@ app.get('/website_time_limit/:username', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// Function to get usernames with the same organ_id
+app.get('/childrenlist/:username', async (req, res) => {
+  try {
+    // Fetch the document for the input username
+    const inputUser = await User.findOne({ username: req.params.username });
+
+    if (!inputUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Use the organ_id of the input user's document to find related users with role "child"
+    const relatedChildren = await User.find({
+      organ_id: inputUser.organ_id,
+      role: "child"
+    }).select('username -_id');
+
+    // Extract usernames
+    const usernames = relatedChildren.map(user => user.username);
+
+    return res.json(usernames); // Return list of usernames
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // Start the server
 const PORT = 5000;
